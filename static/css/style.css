@@ -1,0 +1,438 @@
+/* ==================================================
+   Guardian Pay - stylesheet
+   Place at: static/css/style.css
+   ================================================== */
+
+/* ---------- Design tokens ---------- */
+:root {
+    --paper: #f2f5f7;
+    --surface: #ffffff;
+    --ink: #16202b;
+    --muted: #55626f;
+    --line: #d3dae1;
+
+    --brand: #1d3b5c;
+    --on-brand: #ffffff;
+
+    --pay: #1e7b4f;
+    --pay-bg: #e3f2ea;
+    --hold: #94540a;
+    --hold-bg: #fbeed8;
+    --block: #b3261e;
+    --block-bg: #fbe4e2;
+
+    --zone-low: #2e9467;
+    --zone-medium: #d4a521;
+    --zone-high: #d26a1e;
+    --zone-critical: #b3261e;
+
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua",
+             Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+            Arial, sans-serif;
+
+    --radius: 10px;
+    --focus: #1a6fd1;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --paper: #0f151c;
+        --surface: #172029;
+        --ink: #e8edf2;
+        --muted: #9aa7b4;
+        --line: #2b3946;
+
+        --brand: #9cc2ec;
+        --on-brand: #0f1a26;
+
+        --pay: #63cd9a;
+        --pay-bg: #12301f;
+        --hold: #f0b25a;
+        --hold-bg: #3a2a0e;
+        --block: #ff9088;
+        --block-bg: #3c1613;
+
+        --zone-low: #3aa877;
+        --zone-critical: #e0584e;
+        --focus: #7db7ff;
+    }
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 1rem/1.55 var(--sans);
+}
+
+h1, h2, h3 {
+    font-family: var(--serif);
+    line-height: 1.2;
+    margin: 0 0 .5rem;
+}
+
+h1 { font-size: clamp(1.75rem, 5vw, 2.25rem); }
+h2 { font-size: 1.3rem; }
+h3 { font-size: 1.05rem; margin-top: 1.5rem; }
+
+p { margin: 0 0 .75rem; }
+
+a { color: var(--brand); text-underline-offset: 3px; }
+
+:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+}
+
+/* ---------- Layout ---------- */
+.site-header {
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    max-width: 40rem;
+    margin: 0 auto;
+    padding: .9rem 1.25rem;
+    color: var(--brand);
+    font: 700 1.1rem var(--serif);
+    text-decoration: none;
+}
+
+.shell {
+    max-width: 40rem;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+}
+
+.intro { margin-bottom: 1.5rem; }
+
+.lede {
+    color: var(--muted);
+    max-width: 34rem;
+    font-size: 1.05rem;
+}
+
+.section { margin-top: 2rem; }
+
+.back { margin-top: 2rem; }
+
+.note { color: var(--muted); font-size: .92rem; }
+
+/* ---------- Panel + form ---------- */
+.panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+}
+
+.field { margin-bottom: 1.25rem; }
+
+label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: .35rem;
+}
+
+input[type="text"],
+input[type="number"],
+textarea {
+    width: 100%;
+    font: inherit;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: .65rem .75rem;
+}
+
+textarea { resize: vertical; min-height: 7rem; }
+
+input:focus-visible,
+textarea:focus-visible {
+    border-color: var(--focus);
+}
+
+.input-prefix {
+    display: flex;
+    align-items: stretch;
+}
+
+.input-prefix span {
+    display: flex;
+    align-items: center;
+    padding: 0 .85rem;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-right: 0;
+    border-radius: 8px 0 0 8px;
+    color: var(--muted);
+}
+
+.input-prefix input {
+    border-radius: 0 8px 8px 0;
+}
+
+.field-foot {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: .4rem 0 0;
+    color: var(--muted);
+    font-size: .88rem;
+}
+
+.counter { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.counter.is-near-limit { color: var(--hold); font-weight: 600; }
+
+/* ---------- Buttons ---------- */
+.button {
+    display: inline-block;
+    font: inherit;
+    font-weight: 600;
+    padding: .75rem 1.25rem;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+}
+
+.button--primary {
+    background: var(--brand);
+    color: var(--on-brand);
+}
+
+.button--secondary {
+    background: transparent;
+    color: var(--brand);
+    border-color: var(--brand);
+}
+
+.button--danger {
+    background: transparent;
+    color: var(--block);
+    border-color: var(--block);
+}
+
+.button:hover { filter: brightness(1.08); }
+
+.button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+}
+
+.is-busy .button {
+    opacity: .6;
+    cursor: progress;
+}
+
+/* ---------- Outcomes legend (home) ---------- */
+.outcomes { margin-top: 2.5rem; }
+
+.outcomes dl { margin: 0; }
+
+.outcome {
+    padding: .75rem 1rem;
+    margin-bottom: .6rem;
+    border-left: 4px solid var(--line);
+    background: var(--surface);
+    border-radius: 0 8px 8px 0;
+}
+
+.outcome dt { font-weight: 700; }
+.outcome dd { margin: 0; color: var(--muted); }
+
+.outcome--auto_pay { border-left-color: var(--pay); }
+.outcome--hold { border-left-color: var(--hold); }
+.outcome--block { border-left-color: var(--block); }
+
+/* ---------- Verdict banner (result) ---------- */
+.verdict {
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    border: 1px solid transparent;
+    margin-bottom: 1.25rem;
+}
+
+.verdict h1 { margin-bottom: .4rem; }
+.verdict p:last-child { margin-bottom: 0; }
+
+.verdict-code {
+    font-size: .9rem;
+    font-weight: 600;
+    margin-bottom: .35rem;
+}
+
+.verdict--auto_pay { background: var(--pay-bg); color: var(--pay); border-color: var(--pay); }
+.verdict--hold { background: var(--hold-bg); color: var(--hold); border-color: var(--hold); }
+.verdict--block { background: var(--block-bg); color: var(--block); border-color: var(--block); }
+
+/* ---------- Payee / amount summary ---------- */
+.summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem 3rem;
+    margin: 0;
+    padding: 0 .25rem;
+}
+
+.summary dt { color: var(--muted); font-size: .88rem; }
+
+.summary dd {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.15rem;
+    overflow-wrap: anywhere;
+}
+
+.summary--stacked {
+    flex-direction: column;
+    gap: .75rem;
+    margin-top: 1rem;
+    padding: 0;
+}
+
+.summary--stacked dd { font-size: 1rem; }
+
+/* ---------- Risk meter ---------- */
+.meter { margin: 1rem 0 1.5rem; }
+
+.meter-reading {
+    display: flex;
+    align-items: baseline;
+    gap: .5rem;
+    margin-bottom: .75rem;
+}
+
+.meter-score {
+    font: 700 3rem/1 var(--serif);
+    font-variant-numeric: tabular-nums;
+}
+
+.meter-of { color: var(--muted); }
+
+.meter-verdict {
+    margin-left: auto;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.meter-bar { position: relative; padding: .4rem 0; }
+
+.meter-track {
+    display: grid;
+    grid-template-columns: 30fr 30fr 30fr 10fr;
+    gap: 3px;
+    height: .8rem;
+}
+
+.zone { border-radius: 3px; }
+.zone-low { background: var(--zone-low); }
+.zone-medium { background: var(--zone-medium); }
+.zone-high { background: var(--zone-high); }
+.zone-critical { background: var(--zone-critical); }
+
+.meter-marker {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(var(--score) * 1%);
+    width: 4px;
+    margin-left: -2px;
+    border-radius: 2px;
+    background: var(--ink);
+    outline: 2px solid var(--surface);
+}
+
+.meter-scale {
+    display: grid;
+    grid-template-columns: 30fr 30fr 30fr 10fr;
+    gap: 3px;
+    font-size: .8rem;
+    color: var(--muted);
+}
+
+.meter-scale span:last-child {
+    justify-self: end;
+    white-space: nowrap;
+}
+
+/* ---------- Reasons / advice ---------- */
+.reasons { padding-left: 1.2rem; margin: 0 0 1rem; }
+.reasons li { margin-bottom: .35rem; }
+
+.advice {
+    padding: .85rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.payer-message {
+    margin: 0;
+    padding: .85rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--muted);
+    border-radius: 0 8px 8px 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+/* ---------- Next step panel ---------- */
+.next-step { margin-top: 2rem; }
+.next-step--auto_pay { border-top: 4px solid var(--pay); }
+.next-step--hold { border-top: 4px solid var(--hold); }
+.next-step--block { border-top: 4px solid var(--block); }
+
+.copy-row {
+    display: flex;
+    gap: .5rem;
+    margin-bottom: .75rem;
+}
+
+.copy-row input { flex: 1; min-width: 0; font-size: .85rem; }
+.copy-row .button { padding: .5rem 1rem; white-space: nowrap; }
+
+.decision-form { margin-top: 2rem; }
+
+/* ---------- Message / error notices ---------- */
+.notice {
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    border-left-width: 6px;
+    background: var(--surface);
+}
+
+.notice p:last-of-type { margin-bottom: 0; }
+
+.notice--success { border-left-color: var(--pay); }
+.notice--neutral { border-left-color: var(--brand); }
+.notice--error { border-left-color: var(--block); }
+.notice--error h1 { color: var(--block); }
+
+/* ---------- Small screens ---------- */
+@media (max-width: 30rem) {
+    .shell { padding-top: 1.5rem; }
+    .panel, .verdict, .notice { padding: 1.15rem; }
+    .button-row .button { width: 100%; }
+    .copy-row { flex-direction: column; }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Guardian Pay{% endblock %}
+
+{% block content %}
+<section class="intro">
+    <h1>Check a payment before you send it</h1>
+    <p class="lede">
+        Guardian Pay reviews each payment request for scam warning signs
+        and your family's rules. Nothing is sent to PayPal until it passes.
+    </p>
+</section>
+
+<form class="panel form" action="{{ url_for('score') }}" method="POST"
+      data-submit-once>
+
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <div class="field">
+        <label for="payee">Payee</label>
+        <input id="payee" name="payee" required maxlength="100"
+               autocomplete="off">
+    </div>
+
+    <div class="field">
+        <label for="amount">Amount (USD)</label>
+        <div class="input-prefix">
+            <span aria-hidden="true">$</span>
+            <input id="amount" name="amount" type="number" step="0.01"
+                   min="0.01" max="100000" inputmode="decimal" required>
+        </div>
+    </div>
+
+    <div class="field">
+        <label for="message">Payment message</label>
+        <textarea id="message" name="message" maxlength="1000" rows="5"
+                  aria-describedby="message-help message-count"></textarea>
+        <p class="field-foot">
+            <span id="message-help">
+                Paste the note, invoice text or chat that came with the request.
+            </span>
+            <span id="message-count" class="counter" data-max="1000">
+                0 / 1000
+            </span>
+        </p>
+    </div>
+
+    <button class="button button--primary" type="submit"
+            data-busy-label="Analyzing…">
+        Analyze payment
+    </button>
+</form>
+
+<section class="outcomes" aria-labelledby="outcomes-title">
+    <h2 id="outcomes-title">What happens next</h2>
+    <dl>
+        <div class="outcome outcome--auto_pay">
+            <dt>Pay</dt>
+            <dd>
+                Trusted payee, within the family limit and low risk.
+                You continue to PayPal and approve it there.
+            </dd>
+        </div>
+        <div class="outcome outcome--hold">
+            <dt>Hold</dt>
+            <dd>
+                Unfamiliar payee, a large amount or a raised risk score.
+                A guardian reviews it first.
+            </dd>
+        </div>
+        <div class="outcome outcome--block">
+            <dt>Block</dt>
+            <dd>
+                Strong scam signs. No PayPal order is created.
+            </dd>
+        </div>
+    </dl>
+</section>
+{% endblock %}

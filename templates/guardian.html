@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% from "_meter.html" import risk_meter %}
+
+{% block title %}Guardian Review{% endblock %}
+
+{% block content %}
+<section class="intro">
+    <h1>Guardian Review</h1>
+    <p class="lede">
+        Review this payment request. Nothing has been sent to PayPal yet.
+    </p>
+</section>
+
+<dl class="summary">
+    <div>
+        <dt>Payee</dt>
+        <dd>{{ payment.payee }}</dd>
+    </div>
+    <div>
+        <dt>Amount</dt>
+        <dd>${{ "%.2f"|format(payment.amount) }}</dd>
+    </div>
+</dl>
+
+<section class="section" aria-labelledby="message-title">
+    <h2 id="message-title">Payment message</h2>
+    {% if payment.message %}
+        <blockquote class="payer-message">{{ payment.message }}</blockquote>
+    {% else %}
+        <p class="note">No message was included.</p>
+    {% endif %}
+</section>
+
+<section class="section" aria-labelledby="risk-title">
+    <h2 id="risk-title">AI risk assessment</h2>
+
+    {{ risk_meter(payment.risk) }}
+
+    <h3>Reasons</h3>
+    <ul class="reasons">
+        {% for reason in payment.risk.reasons %}
+            <li>{{ reason }}</li>
+        {% endfor %}
+    </ul>
+
+    <p class="advice"><strong>AI advice:</strong> {{ payment.risk.advice }}</p>
+</section>
+
+{% if payment.decision.reasons %}
+<section class="section" aria-labelledby="hold-title">
+    <h2 id="hold-title">Why this payment was held</h2>
+    <ul class="reasons">
+        {% for reason in payment.decision.reasons %}
+            <li>{{ reason }}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+<form class="panel decision-form" method="POST" data-submit-once>
+
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <p class="note">
+        This link works once. Your choice is final.
+    </p>
+
+    <div class="button-row">
+        <button class="button button--primary" name="action" value="approve"
+                data-busy-label="Working…">
+            Approve and continue to PayPal
+        </button>
+
+        <button class="button button--danger" name="action" value="deny"
+                data-busy-label="Working…">
+            Deny payment
+        </button>
+    </div>
+</form>
+{% endblock %}

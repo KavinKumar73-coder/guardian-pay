@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% from "_meter.html" import risk_meter %}
+
+{% block title %}Payment Analysis - Guardian Pay{% endblock %}
+
+{% block content %}
+{% set d = decision.decision %}
+
+<section class="verdict verdict--{{ d|lower }}">
+    <p class="verdict-code">Decision: {{ d }}</p>
+    <h1>
+        {% if d == "AUTO_PAY" %}Ready for PayPal checkout
+        {% elif d == "HOLD" %}Held for guardian approval
+        {% else %}Payment blocked
+        {% endif %}
+    </h1>
+    <p>{{ decision.get("explanation", "No explanation provided.") }}</p>
+</section>
+
+<dl class="summary">
+    <div>
+        <dt>Payee</dt>
+        <dd>{{ payee }}</dd>
+    </div>
+    <div>
+        <dt>Amount</dt>
+        <dd>${{ "%.2f"|format(amount) }}</dd>
+    </div>
+</dl>
+
+<section class="section" aria-labelledby="analysis-title">
+    <h2 id="analysis-title">Gemini AI analysis</h2>
+
+    {{ risk_meter(risk) }}
+
+    <h3>Reasons</h3>
+    <ul class="reasons">
+        {% for reason in risk.get("reasons", []) %}
+            <li>{{ reason }}</li>
+        {% endfor %}
+
+        {% for reason in decision.get("reasons", []) %}
+            {% if reason not in risk.get("reasons", []) %}
+                <li>{{ reason }}</li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+
+    {% if risk.get("advice") %}
+    <p class="advice"><strong>AI advice:</strong> {{ risk.get("advice", "") }}</p>
+    {% endif %}
+</section>
+
+<section class="panel next-step next-step--{{ d|lower }}"
+         aria-labelledby="next-title">
+
+    {% if d == "AUTO_PAY" %}
+
+        <h2 id="next-title">Continue to PayPal</h2>
+        <p>Buyer authorization is still required.</p>
+
+        <form action="{{ url_for('checkout', payment_id=payment_id) }}"
+              method="POST" data-submit-once>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="button button--primary" type="submit"
+                    data-busy-label="Opening PayPal…">
+                Continue to PayPal
+            </button>
+        </form>
+
+    {% elif d == "HOLD" %}
+
+        <h2 id="next-title">Guardian approval required</h2>
+        <p>Share this private link with the guardian.</p>
+
+        <div class="copy-row">
+            <input id="guardian-link" type="text" readonly
+                   value="{{ guardian_url }}"
+                   aria-label="Private guardian review link">
+            <button class="button button--secondary" type="button"
+                    data-copy-target="#guardian-link">
+                Copy link
+            </button>
+        </div>
+
+        <p><a href="{{ guardian_url }}">Open Guardian Review</a></p>
+        <p class="note">
+            This link expires in 10 minutes and can be used once.
+        </p>
+
+    {% else %}
+
+        <h2 id="next-title">Payment blocked</h2>
+        <p>No PayPal order was created.</p>
+
+    {% endif %}
+</section>
+
+<p class="back"><a href="{{ url_for('home') }}">Check another payment</a></p>
+{% endblock %}

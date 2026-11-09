@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Guardian Pay{% endblock %}
+
+{% block content %}
+<section class="notice notice--{{ kind }}"
+         role="{{ 'alert' if kind == 'error' else 'status' }}">
+    <h1>{{ title }}</h1>
+    <p>{{ message }}</p>
+
+    {% if details %}
+    <dl class="summary summary--stacked">
+        {% for label, value in details %}
+        <div>
+            <dt>{{ label }}</dt>
+            <dd>{{ value }}</dd>
+        </div>
+        {% endfor %}
+    </dl>
+    {% endif %}
+</section>
+
+<p class="back"><a href="{{ url_for('home') }}">Return to Guardian Pay</a></p>
+{% endblock %}

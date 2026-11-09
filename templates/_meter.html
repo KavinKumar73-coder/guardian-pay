@@ -1,0 +1,28 @@
+{# Risk meter. Zones mirror the scoring bands in ai_scorer.py:
+   0-29 Low, 30-59 Medium, 60-89 High, 90-100 Critical. #}
+{% macro risk_meter(risk) %}
+{% set score = risk.score|int %}
+<div class="meter" style="--score: {{ score }}">
+    <p class="meter-reading">
+        <span class="meter-score">{{ score }}</span>
+        <span class="meter-of">/ 100</span>
+        <span class="meter-verdict">{{ risk.verdict }}</span>
+    </p>
+    <div class="meter-bar" role="img"
+         aria-label="Risk score {{ score }} out of 100, verdict {{ risk.verdict }}">
+        <div class="meter-track">
+            <span class="zone zone-low"></span>
+            <span class="zone zone-medium"></span>
+            <span class="zone zone-high"></span>
+            <span class="zone zone-critical"></span>
+        </div>
+        <span class="meter-marker"></span>
+    </div>
+    <div class="meter-scale" aria-hidden="true">
+        <span>Low</span>
+        <span>Medium</span>
+        <span>High</span>
+        <span>Critical</span>
+    </div>
+</div>
+{% endmacro %}

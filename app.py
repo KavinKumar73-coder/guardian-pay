@@ -12,8 +12,14 @@ from flask import (
     render_template,
     redirect,
     url_for,
-    session
+    session,
+    jsonify
 )
+from dotenv import load_dotenv
+from werkzeug.middleware.proxy_fix import ProxyFix
+
+# Load environment variables before importing application modules.
+load_dotenv()
 
 from ai_scorer import score_payment_ai
 from rules import make_decision
@@ -24,23 +30,56 @@ from paypal import create_order, capture_order
 # APPLICATION CONFIGURATION
 # ==================================================
 
+# On Render, configure environment values through the service
+# Environment settings; the local .env file is not deployed.
+
 # Flask automatically looks for:
 #   templates/  -> HTML (Jinja2) templates
 #   static/     -> CSS, JavaScript, images
 # Both folders must sit next to this file.
 app = Flask(__name__)
 
-app.secret_key = (
-    os.environ.get("FLASK_SECRET_KEY")
-    or secrets.token_hex(32)
+APP_BASE_URL = (
+    os.getenv("APP_BASE_URL", "http://127.0.0.1:5000")
+    .strip()
+    .rstrip("/")
 )
+
+IS_RENDER = os.getenv("RENDER", "").lower() == "true"
+IS_PRODUCTION = IS_RENDER or APP_BASE_URL.startswith("https://")
+
+FLASK_SECRET_KEY = os.getenv("FLASK_SECRET_KEY")
+
+# A public deployment must use a stable signing key.
+if IS_PRODUCTION and not FLASK_SECRET_KEY:
+    raise RuntimeError(
+        "FLASK_SECRET_KEY must be configured in the deployment environment."
+    )
+
+if IS_RENDER and not APP_BASE_URL.startswith("https://"):
+    raise RuntimeError(
+        "APP_BASE_URL must be the public HTTPS URL of the Render service."
+    )
+
+app.secret_key = FLASK_SECRET_KEY or secrets.token_hex(32)
 
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
-    SESSION_COOKIE_SECURE=False,  # Local HTTP sandbox demo
+    SESSION_COOKIE_SECURE=IS_PRODUCTION,
+    PREFERRED_URL_SCHEME="https" if IS_PRODUCTION else "http",
     MAX_CONTENT_LENGTH=16 * 1024
 )
+
+# Render terminates HTTPS at its reverse proxy. Trust the forwarded
+# scheme/host so external URLs use the public HTTPS address.
+if IS_PRODUCTION:
+    app.wsgi_app = ProxyFix(
+        app.wsgi_app,
+        x_for=1,
+        x_proto=1,
+        x_host=1
+    )
 
 GUARDIAN_LINK_EXPIRY = 600
 MAX_PAYMENT_AMOUNT = Decimal("100000.00")
@@ -227,6 +266,41 @@ def create_paypal_checkout(payment_id, allowed_statuses):
 
 
 # ==================================================
+# RESPONSE SECURITY HEADERS
+# ==================================================
+
+@app.after_request
+def add_security_headers(response):
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault(
+        "Referrer-Policy",
+        "strict-origin-when-cross-origin"
+    )
+    response.headers.setdefault(
+        "Permissions-Policy",
+        "camera=(), microphone=(), geolocation=()"
+    )
+
+    if IS_PRODUCTION:
+        response.headers.setdefault(
+            "Strict-Transport-Security",
+            "max-age=31536000; includeSubDomains"
+        )
+
+    return response
+
+
+# ==================================================
+# HEALTH CHECK
+# ==================================================
+
+@app.route("/health")
+def health():
+    return jsonify(status="ok"), 200
+
+
+# ==================================================
 # HOME PAGE
 # ==================================================
 
@@ -295,14 +369,6 @@ def score():
             float(amount),
             risk
         )
-        # DEBUG OUTPUT
-        # (the original printed risk.get("risk_score"), which is
-        # not a key Gemini returns; the real key is "score")
-        print("AI RISK:", risk.get("score"))
-        print("AI VERDICT:", risk.get("verdict"))
-        print("RULE DECISION:", decision.get("decision"))
-        print("RULE REASONS:", decision.get("reasons"))
-
         if not isinstance(decision, dict):
             raise ValueError("Invalid decision response.")
 
@@ -613,7 +679,7 @@ if __name__ == "__main__":
 
     app.run(
         debug=False,
-        host="127.0.0.1",
-        port=5000,
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000)),
         threaded=True
     )
